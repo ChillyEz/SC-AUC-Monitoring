@@ -228,7 +228,7 @@ Scheduler → Background Tasks → Notifications
 ## Технологический стек
 
 ### Backend
-- **Framework**: FastAPI 0.104.1
+- **Framework**: FastAPI 0.109.1
 - **Server**: Uvicorn
 - **Validation**: Pydantic 2.5.0
 - **HTTP Client**: httpx 0.25.2
