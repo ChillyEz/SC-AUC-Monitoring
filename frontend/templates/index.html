@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SC-AUC-Monitoring - Stalcraft Auction Monitor</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/components/auction-table.css">
+    <link rel="stylesheet" href="/static/css/components/item-selector.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SC-AUC-Monitoring</h1>
+            <p class="subtitle">Мониторинг аукциона Stalcraft</p>
+        </header>
+
+        <main>
+            <!-- Region Selector -->
+            <section class="control-panel">
+                <div class="region-selector">
+                    <label for="region">Регион:</label>
+                    <select id="region" name="region">
+                        <option value="EU">EU (Europe)</option>
+                        <option value="RU">RU (Russia)</option>
+                        <option value="NA">NA (North America)</option>
+                        <option value="SEA">SEA (Southeast Asia)</option>
+                    </select>
+                </div>
+
+                <!-- Item Selector -->
+                <div class="item-selector">
+                    <label for="item-id">ID предмета:</label>
+                    <input type="text" id="item-id" name="item-id" placeholder="Введите ID предмета">
+                    <button id="search-btn" type="button">Найти</button>
+                </div>
+
+                <div class="status-indicator">
+                    <span id="api-status">Статус: <span class="badge" id="api-badge">Demo API</span></span>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results">
+                <!-- Active Lots -->
+                <div class="lots-section">
+                    <h2>Активные лоты</h2>
+                    <div id="lots-loading" class="loading" style="display: none;">Загрузка...</div>
+                    <div id="lots-error" class="error" style="display: none;"></div>
+                    <div id="lots-container">
+                        <p class="placeholder">Выберите регион и предмет для просмотра лотов</p>
+                    </div>
+                </div>
+
+                <!-- Sales History -->
+                <div class="history-section">
+                    <h2>История продаж</h2>
+                    <div id="history-loading" class="loading" style="display: none;">Загрузка...</div>
+                    <div id="history-error" class="error" style="display: none;"></div>
+                    <div id="history-container">
+                        <p class="placeholder">Выберите регион и предмет для просмотра истории</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>SC-AUC-Monitoring v0.1.0 (MVP) | 
+               <a href="/api/docs" target="_blank">API Docs</a> | 
+               <a href="https://github.com/ChillyEz/SC-AUC-Monitoring" target="_blank">GitHub</a>
+            </p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/components/region-selector.js"></script>
+    <script src="/static/js/components/item-selector.js"></script>
+    <script src="/static/js/components/auction-table.js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

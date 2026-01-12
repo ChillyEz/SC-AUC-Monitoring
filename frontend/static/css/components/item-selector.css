@@ -1,0 +1,40 @@
+/* Item selector styles */
+
+.item-selector {
+    flex: 1;
+    min-width: 300px;
+}
+
+.item-selector input {
+    width: 100%;
+}
+
+.region-selector select {
+    min-width: 200px;
+}
+
+.search-suggestions {
+    position: absolute;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    margin-top: 5px;
+}
+
+.suggestion-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.suggestion-item:hover {
+    background: var(--bg-color);
+}
+
+.suggestion-item:not(:last-child) {
+    border-bottom: 1px solid var(--border-color);
+}
