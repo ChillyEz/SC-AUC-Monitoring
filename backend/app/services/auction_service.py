@@ -1,7 +1,6 @@
 """
 Auction service - бизнес-логика для работы с аукционом
 """
-#from typing import Any
 from app.clients.stalcraft import stalcraft_client
 from app.models.auction import AuctionLotsResponse, AuctionHistoryResponse, AuctionLot, AuctionHistoryItem
 from app.core.exceptions import InvalidRegionError
