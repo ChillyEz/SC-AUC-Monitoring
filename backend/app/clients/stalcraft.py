@@ -12,22 +12,18 @@ class StalcraftAPIClient:
 
     def __init__(self):
         self.base_url = settings.api_base_url
-        self.use_demo = settings.USE_DEMO_API
-        self.token = settings.STALCRAFT_API_TOKEN
         self.timeout = 10.0
 
     def _get_headers(self) -> dict[str, str]:
-        """Заголовки - авторизация только для prod API"""
-        headers = {"Content-Type": "application/json"}
+        """Заголовки с авторизацией для всех запросов"""
+        token = settings.api_token
+        if not token:
+            raise StalcraftAPIError("STALCRAFT API token is required")
 
-        if not self.use_demo:
-            if not self.token:
-                raise StalcraftAPIError(
-                    "STALCRAFT_API_TOKEN required for production API"
-                )
-            headers["Authorization"] = f"Bearer {self.token}"
-
-        return headers
+        return {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {token}",
+        }
 
     async def get_auction_lots(
         self,
