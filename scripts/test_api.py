@@ -13,6 +13,7 @@ import sys
 backend_path = Path(__file__).parent.parent / "backend"
 sys.path.insert(0, str(backend_path))
 
+# Import после изменения sys.path
 from app.config import settings
 
 

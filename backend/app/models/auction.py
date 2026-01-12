@@ -3,6 +3,11 @@ from datetime import datetime
 from typing import Any, Literal
 
 
+# Типы для параметров запроса
+AuctionSortField = Literal["time_created", "time_left", "current_price", "buyout_price"]
+SortOrder = Literal["asc", "desc"]
+
+
 class AuctionLot(BaseModel):
     """
     Активный лот на аукционе
@@ -65,8 +70,3 @@ class AuctionHistoryResponse(BaseModel):
     """Ответ API с историей продаж"""
     total: int = Field(..., description="Общее количество записей в базе")
     prices: list[AuctionPriceHistory] = Field(default_factory=list, description="История цен (отсортирована по времени)")
-
-
-# Типы для параметров запроса
-AuctionSortField = Literal["time_created", "time_left", "current_price", "buyout_price"]
-SortOrder = Literal["asc", "desc"]

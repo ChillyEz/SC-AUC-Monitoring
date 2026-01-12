@@ -5,7 +5,7 @@ Auction service - бизнес-логика для работы с аукцио�
 from typing import Literal
 from app.clients.stalcraft import stalcraft_client
 from app.models.auction import AuctionLotsResponse, AuctionHistoryResponse
-from app.core.exceptions import StalcraftAPIError, InvalidRegionError
+from app.core.exceptions import InvalidRegionError
 from app.config import settings
 
 
