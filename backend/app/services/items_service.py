@@ -1,11 +1,11 @@
 """
 Items service - работа с базой предметов Stalcraft
 """
-import httpx
-from typing import Any
+#import httpx
+#from typing import Any
 from app.config import settings
 from app.models.items import Item, ItemsListResponse
-from app.core.exceptions import ItemNotFoundError
+#from app.core.exceptions import ItemNotFoundError
 
 
 class ItemsService:
