@@ -69,7 +69,10 @@ class StalcraftAPIClient:
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get(
-                    url, headers=self._get_headers(), params=params, timeout=self.timeout
+                    url,
+                    headers=self._get_headers(),
+                    params=params,
+                    timeout=self.timeout,
                 )
                 response.raise_for_status()
                 return response.json()
@@ -112,7 +115,10 @@ class StalcraftAPIClient:
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get(
-                    url, headers=self._get_headers(), params=params, timeout=self.timeout
+                    url,
+                    headers=self._get_headers(),
+                    params=params,
+                    timeout=self.timeout,
                 )
                 response.raise_for_status()
                 return response.json()

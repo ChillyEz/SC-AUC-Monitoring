@@ -4,9 +4,7 @@ from typing import Any, Literal
 
 
 # Типы для параметров запроса
-AuctionSortField = Literal[
-    "time_created", "time_left", "current_price", "buyout_price"
-]
+AuctionSortField = Literal["time_created", "time_left", "current_price", "buyout_price"]
 SortOrder = Literal["asc", "desc"]
 
 

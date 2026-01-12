@@ -30,7 +30,9 @@ async def get_auction_lots(
     additional: bool = Query(
         default=False, description="Включить дополнительную информацию"
     ),
-    limit: int = Query(default=20, ge=0, le=200, description="Количество лотов (0-200)"),
+    limit: int = Query(
+        default=20, ge=0, le=200, description="Количество лотов (0-200)"
+    ),
     offset: int = Query(default=0, ge=0, description="Сдвиг в списке"),
     order: SortOrder = Query(default="desc", description="Порядок сортировки"),
     sort: AuctionSortField = Query(
@@ -62,9 +64,7 @@ async def get_auction_lots(
     except InvalidRegionError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except StalcraftAPIError as e:
-        raise HTTPException(
-            status_code=502, detail=f"Stalcraft API error: {str(e)}"
-        )
+        raise HTTPException(status_code=502, detail=f"Stalcraft API error: {str(e)}")
 
 
 @router.get(
@@ -104,6 +104,4 @@ async def get_auction_history(
     except InvalidRegionError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except StalcraftAPIError as e:
-        raise HTTPException(
-            status_code=502, detail=f"Stalcraft API error: {str(e)}"
-        )
+        raise HTTPException(status_code=502, detail=f"Stalcraft API error: {str(e)}")
