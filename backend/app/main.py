@@ -35,7 +35,9 @@ if frontend_static.exists():
 # Serve index.html
 @app.get("/", response_class=HTMLResponse)
 async def root():
-    frontend_index = Path(__file__).parent.parent.parent / "frontend" / "templates" / "index.html"
+    frontend_index = (
+        Path(__file__).parent.parent.parent / "frontend" / "templates" / "index.html"
+    )
     if frontend_index.exists():
         return frontend_index.read_text()
     return "<h1>SC-AUC-Monitoring</h1><p>Frontend not found</p>"
@@ -47,5 +49,5 @@ async def health():
         "status": "ok",
         "version": settings.APP_VERSION,
         "environment": settings.ENV,
-        "using_demo_api": settings.USE_DEMO_API
+        "using_demo_api": settings.USE_DEMO_API,
     }

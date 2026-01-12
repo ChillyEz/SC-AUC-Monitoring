@@ -1,6 +1,7 @@
 """
 Auction API endpoints
 """
+
 from fastapi import APIRouter, HTTPException, Query
 from app.services.auction_service import auction_service
 from app.models.auction import AuctionLotsResponse, AuctionHistoryResponse
@@ -10,13 +11,10 @@ router = APIRouter(prefix="/auction", tags=["Auction"])
 
 
 @router.get("/{region}/{item_id}/lots", response_model=AuctionLotsResponse)
-async def get_auction_lots(
-    region: str,
-    item_id: str
-):
+async def get_auction_lots(region: str, item_id: str):
     """
     Получить активные лоты аукциона
-    
+
     - **region**: Регион (EU, RU, NA, SEA)
     - **item_id**: ID предмета
     """
@@ -34,11 +32,11 @@ async def get_auction_lots(
 async def get_auction_history(
     region: str,
     item_id: str,
-    limit: int = Query(default=50, ge=1, le=100, description="Количество записей")
+    limit: int = Query(default=50, ge=1, le=100, description="Количество записей"),
 ):
     """
     Получить историю продаж
-    
+
     - **region**: Регион (EU, RU, NA, SEA)
     - **item_id**: ID предмета
     - **limit**: Количество записей (1-100)
