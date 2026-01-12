@@ -4,7 +4,12 @@ Auction API endpoints
 
 from fastapi import APIRouter, Query, HTTPException
 from typing import Literal
-from app.models.auction import AuctionLotsResponse, AuctionHistoryResponse, AuctionSortField, SortOrder
+from app.models.auction import (
+    AuctionLotsResponse,
+    AuctionHistoryResponse,
+    AuctionSortField,
+    SortOrder,
+)
 from app.services.auction_service import auction_service
 from app.core.exceptions import StalcraftAPIError, InvalidRegionError
 
@@ -17,20 +22,26 @@ Region = Literal["EU", "RU", "NA", "SEA"]
     "/{region}/auction/{item_id}/lots",
     response_model=AuctionLotsResponse,
     summary="Получить активные лоты",
-    description="Возвращает список активных лотов для указанного предмета на аукционе"
+    description="Возвращает список активных лотов для указанного предмета на аукционе",
 )
 async def get_auction_lots(
     region: Region,
     item_id: str,
-    additional: bool = Query(default=False, description="Включить дополнительную информацию"),
-    limit: int = Query(default=20, ge=0, le=200, description="Количество лотов (0-200)"),
+    additional: bool = Query(
+        default=False, description="Включить дополнительную информацию"
+    ),
+    limit: int = Query(
+        default=20, ge=0, le=200, description="Количество лотов (0-200)"
+    ),
     offset: int = Query(default=0, ge=0, description="Сдвиг в списке"),
     order: SortOrder = Query(default="desc", description="Порядок сортировки"),
-    sort: AuctionSortField = Query(default="time_created", description="Поле для сортировки")
+    sort: AuctionSortField = Query(
+        default="time_created", description="Поле для сортировки"
+    ),
 ):
     """
     Получить активные лоты аукциона
-    
+
     - **region**: Регион игры (EU, RU, NA, SEA)
     - **item_id**: ID предмета (например, "y1q9")
     - **additional**: Включить дополнительную информацию о лотах
@@ -47,7 +58,7 @@ async def get_auction_lots(
             limit=limit,
             offset=offset,
             order=order,
-            sort=sort
+            sort=sort,
         )
     except InvalidRegionError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -59,18 +70,22 @@ async def get_auction_lots(
     "/{region}/auction/{item_id}/history",
     response_model=AuctionHistoryResponse,
     summary="Получить историю продаж",
-    description="Возвращает историю цен для предмета, отсортированную по времени покупки"
+    description="Возвращает историю цен для предмета, отсортированную по времени покупки",
 )
 async def get_auction_history(
     region: Region,
     item_id: str,
-    additional: bool = Query(default=False, description="Включить дополнительную информацию"),
-    limit: int = Query(default=20, ge=0, le=200, description="Количество записей (0-200)"),
-    offset: int = Query(default=0, ge=0, description="Сдвиг в списке")
+    additional: bool = Query(
+        default=False, description="Включить дополнительную информацию"
+    ),
+    limit: int = Query(
+        default=20, ge=0, le=200, description="Количество записей (0-200)"
+    ),
+    offset: int = Query(default=0, ge=0, description="Сдвиг в списке"),
 ):
     """
     Получить историю продаж предмета
-    
+
     - **region**: Регион игры (EU, RU, NA, SEA)
     - **item_id**: ID предмета (например, "y1q9")
     - **additional**: Включить дополнительную информацию о продажах
@@ -83,7 +98,7 @@ async def get_auction_history(
             item_id=item_id,
             additional=additional,
             limit=limit,
-            offset=offset
+            offset=offset,
         )
     except InvalidRegionError as e:
         raise HTTPException(status_code=400, detail=str(e))
