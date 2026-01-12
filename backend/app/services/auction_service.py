@@ -19,7 +19,8 @@ class AuctionService:
         """Проверить валидность региона"""
         if region.upper() not in settings.SUPPORTED_REGIONS:
             raise InvalidRegionError(
-                f"Invalid region '{region}'. Supported: {', '.join(settings.SUPPORTED_REGIONS)}"
+                f"Invalid region '{region}'. "
+                f"Supported: {', '.join(settings.SUPPORTED_REGIONS)}"
             )
 
     async def get_lots(
