@@ -7,23 +7,50 @@ from app.core.exceptions import StalcraftAPIError
 class StalcraftAPIClient:
     """
     Клиент для работы с Stalcraft API
-    Поддерживает Demo и Production API
+    Поддерживает Demo, Production и Wiki API
     """
 
     def __init__(self):
         self.base_url = settings.api_base_url
+        self.api_source = settings.API_SOURCE
         self.timeout = 10.0
 
     def _get_headers(self) -> dict[str, str]:
         """Заголовки с авторизацией для всех запросов"""
-        token = settings.api_token
-        if not token:
-            raise StalcraftAPIError("STALCRAFT API token is required")
+        headers = {"Content-Type": "application/json"}
+        
+        if self.api_source == "wiki":
+            # Wiki API uses X-Internal-Key header
+            headers["X-Internal-Key"] = settings.STALCRAFT_WIKI_API_KEY
+        else:
+            # Official API uses Bearer token authorization
+            token = settings.api_token
+            if not token:
+                raise StalcraftAPIError("STALCRAFT API token is required")
+            headers["Authorization"] = f"Bearer {token}"
+        
+        return headers
 
-        return {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {token}",
-        }
+    def _build_url(self, endpoint: str, region: str, item_id: str) -> str:
+        """Построить URL для запроса в зависимости от источника API"""
+        if self.api_source == "wiki":
+            if endpoint == "history":
+                # Wiki API uses a different path structure for history endpoint
+                return f"{self.base_url}/slug/api/auction-history"
+            else:  # available-lots endpoint
+                return f"{self.base_url}/api/available-lots"
+        else:
+            # Official API
+            return f"{self.base_url}/{region}/auction/{item_id}/{endpoint}"
+
+    def _build_params(self, region: str, item_id: str, endpoint: str, **kwargs) -> dict:
+        """Построить параметры запроса в зависимости от источника API"""
+        if self.api_source == "wiki":
+            # Wiki API uses region and id as query params
+            return {"region": region.lower(), "id": item_id}
+        else:
+            # Official API uses kwargs as params
+            return kwargs
 
     async def get_auction_lots(
         self,
@@ -52,15 +79,23 @@ class StalcraftAPIClient:
         Returns:
             {"total": int, "lots": [...]}
         """
-        url = f"{self.base_url}/{region}/auction/{item_id}/lots"
-
-        params = {
-            "additional": str(additional).lower(),
-            "limit": str(limit),
-            "offset": str(offset),
-            "order": order,
-            "sort": sort,
-        }
+        if self.api_source == "wiki":
+            # Wiki API uses different endpoint and params
+            url = self._build_url("available-lots", region, item_id)
+            params = self._build_params(region, item_id, "available-lots")
+        else:
+            # Official API
+            url = self._build_url("lots", region, item_id)
+            params = self._build_params(
+                region,
+                item_id,
+                "lots",
+                additional=str(additional).lower(),
+                limit=str(limit),
+                offset=str(offset),
+                order=order,
+                sort=sort,
+            )
 
         try:
             async with httpx.AsyncClient() as client:
@@ -100,13 +135,21 @@ class StalcraftAPIClient:
         Returns:
             {"total": int, "prices": [...]}
         """
-        url = f"{self.base_url}/{region}/auction/{item_id}/history"
-
-        params = {
-            "additional": str(additional).lower(),
-            "limit": str(limit),
-            "offset": str(offset),
-        }
+        if self.api_source == "wiki":
+            # Wiki API uses different endpoint and params
+            url = self._build_url("history", region, item_id)
+            params = self._build_params(region, item_id, "history")
+        else:
+            # Official API
+            url = self._build_url("history", region, item_id)
+            params = self._build_params(
+                region,
+                item_id,
+                "history",
+                additional=str(additional).lower(),
+                limit=str(limit),
+                offset=str(offset),
+            )
 
         try:
             async with httpx.AsyncClient() as client:

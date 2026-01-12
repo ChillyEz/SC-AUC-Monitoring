@@ -49,5 +49,6 @@ async def health():
         "status": "ok",
         "version": settings.APP_VERSION,
         "environment": settings.ENV,
-        "using_demo_api": settings.USE_DEMO_API,
+        "api_source": settings.API_SOURCE,
+        "using_demo_api": settings.API_SOURCE == "demo",
     }
