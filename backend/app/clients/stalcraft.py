@@ -35,8 +35,9 @@ class StalcraftAPIClient:
         """Построить URL для запроса в зависимости от источника API"""
         if self.api_source == "wiki":
             if endpoint == "history":
+                # Wiki API uses a different path structure for history endpoint
                 return f"{self.base_url}/slug/api/auction-history"
-            else:  # available-lots
+            else:  # available-lots endpoint
                 return f"{self.base_url}/api/available-lots"
         else:
             # Official API

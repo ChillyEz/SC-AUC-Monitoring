@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     # Production API Token (to be provided by user)
     STALCRAFT_PROD_TOKEN: str = ""
     # Unofficial Wiki API (for development/testing only)
+    # Note: This is a public API key shared for development purposes
     STALCRAFT_WIKI_HOST: str = "stalcraft.wiki"
     STALCRAFT_WIKI_API_KEY: str = "cb2b4565-a129-4e9c-bbd1-88427f79468d"
 
