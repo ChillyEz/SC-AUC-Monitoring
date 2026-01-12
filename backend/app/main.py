@@ -39,7 +39,7 @@ async def root():
         Path(__file__).parent.parent.parent / "frontend" / "templates" / "index.html"
     )
     if frontend_index.exists():
-        return frontend_index.read_text()
+        return frontend_index.read_text(encoding="utf-8")
     return "<h1>SC-AUC-Monitoring</h1><p>Frontend not found</p>"
 
 

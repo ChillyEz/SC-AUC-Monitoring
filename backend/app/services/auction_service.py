@@ -2,97 +2,71 @@
 Auction service - бизнес-логика для работы с аукционом
 """
 
+from typing import Literal
 from app.clients.stalcraft import stalcraft_client
-from app.models.auction import (
-    AuctionLotsResponse,
-    AuctionHistoryResponse,
-    AuctionLot,
-    AuctionHistoryItem,
-)
-from app.core.exceptions import InvalidRegionError
+from app.models.auction import AuctionLotsResponse, AuctionHistoryResponse
+from app.core.exceptions import StalcraftAPIError, InvalidRegionError
 from app.config import settings
 
 
 class AuctionService:
     """Сервис для работы с аукционом"""
-
-    async def get_lots(self, region: str, item_id: str) -> AuctionLotsResponse:
-        """
-        Получить активные лоты аукциона
-
-        TODO: Адаптировать парсинг ответа API под реальную структуру
-        """
-        # Валидация региона
+    
+    def __init__(self):
+        self.client = stalcraft_client
+    
+    def _validate_region(self, region: str) -> None:
+        """Проверить валидность региона"""
         if region.upper() not in settings.SUPPORTED_REGIONS:
             raise InvalidRegionError(
-                f"Region {region} not supported. Use: {', '.join(settings.SUPPORTED_REGIONS)}"
+                f"Invalid region '{region}'. Supported: {', '.join(settings.SUPPORTED_REGIONS)}"
             )
-
-        # Получить данные из API
-        raw_data = await stalcraft_client.get_auction_lots(region.upper(), item_id)
-
-        # TODO: Адаптировать парсинг под реальную структуру ответа
-        # Пример предполагаемой структуры: {"lots": [...], "total": 10}
-        lots_data = raw_data.get("lots", [])
-
-        # Парсинг лотов
-        lots = []
-        for lot_data in lots_data:
-            try:
-                lot = AuctionLot(**lot_data)
-                lots.append(lot)
-            except Exception:
-                # Пропустить невалидные лоты
-                continue
-
-        return AuctionLotsResponse(
-            item_id=item_id,
+    
+    async def get_lots(
+        self,
+        region: str,
+        item_id: str,
+        additional: bool = False,
+        limit: int = 20,
+        offset: int = 0,
+        order: Literal["asc", "desc"] = "desc",
+        sort: Literal["time_created", "time_left", "current_price", "buyout_price"] = "time_created"
+    ) -> AuctionLotsResponse:
+        """Получить активные лоты"""
+        self._validate_region(region)
+        
+        data = await self.client.get_auction_lots(
             region=region.upper(),
-            lots=lots,
-            total=len(lots),
-            raw_data=raw_data,  # Для отладки
+            item_id=item_id,
+            additional=additional,
+            limit=limit,
+            offset=offset,
+            order=order,
+            sort=sort
         )
-
+        
+        return AuctionLotsResponse(**data)
+    
     async def get_history(
-        self, region: str, item_id: str, limit: int = 50
+        self,
+        region: str,
+        item_id: str,
+        additional: bool = False,
+        limit: int = 20,
+        offset: int = 0
     ) -> AuctionHistoryResponse:
-        """
-        Получить историю продаж
-
-        TODO: Адаптировать парсинг ответа API под реальную структуру
-        """
-        # Валидация региона
-        if region.upper() not in settings.SUPPORTED_REGIONS:
-            raise InvalidRegionError(
-                f"Region {region} not supported. Use: {', '.join(settings.SUPPORTED_REGIONS)}"
-            )
-
-        # Получить данные из API
-        raw_data = await stalcraft_client.get_auction_history(
-            region.upper(), item_id, limit
-        )
-
-        # TODO: Адаптировать парсинг под реальную структуру ответа
-        # Пример предполагаемой структуры: {"history": [...], "total": 50}
-        history_data = raw_data.get("history", [])
-
-        # Парсинг истории
-        history = []
-        for item_data in history_data:
-            try:
-                item = AuctionHistoryItem(**item_data)
-                history.append(item)
-            except Exception:
-                # Пропустить невалидные записи
-                continue
-
-        return AuctionHistoryResponse(
-            item_id=item_id,
+        """Получить историю продаж"""
+        self._validate_region(region)
+        
+        data = await self.client.get_auction_history(
             region=region.upper(),
-            history=history,
-            total=len(history),
-            raw_data=raw_data,  # Для отладки
+            item_id=item_id,
+            additional=additional,
+            limit=limit,
+            offset=offset
         )
+        
+        return AuctionHistoryResponse(**data)
 
 
 # Singleton
