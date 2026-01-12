@@ -1,84 +1,84 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
-# TODO: Эти модели нужно адаптировать после получения реальных данных из API
-# Сейчас это примерная структура для разработки
+
+# Типы для параметров запроса
+AuctionSortField = Literal["time_created", "time_left", "current_price", "buyout_price"]
+SortOrder = Literal["asc", "desc"]
 
 
 class AuctionLot(BaseModel):
     """
-    Модель активного лота на аукционе
+    Активный лот на аукционе
 
-    TODO: Адаптировать поля под реальный JSON из API
-    Возможные поля (примерные):
-    - price: int | float
-    - amount: int
-    - seller: str | None
-    - time_left: int | str
-    - created_at: datetime
+    Структура из реального API Stalcraft
     """
 
-    price: int = Field(..., description="Цена лота")
-    amount: int = Field(default=1, description="Количество предметов")
-    time_left: str | None = Field(default=None, description="Оставшееся время")
-
-    # Дополнительные поля - раскомментировать после проверки API
-    # seller: str | None = None
-    # created_at: datetime | None = None
+    itemId: str = Field(..., description="ID предмета")
+    amount: int = Field(..., description="Количество предметов в лоте")
+    startPrice: int = Field(..., description="Начальная цена")
+    currentPrice: int = Field(..., description="Текущая цена")
+    buyoutPrice: int = Field(..., description="Цена немедленного выкупа")
+    startTime: datetime = Field(..., description="Время создания лота")
+    endTime: datetime = Field(..., description="Время окончания лота")
+    additional: dict[str, Any] = Field(
+        default_factory=dict, description="Дополнительная информация (если запрошена)"
+    )
 
     class Config:
-        extra = "allow"  # Разрешить дополнительные поля из API
-
-
-class AuctionHistoryItem(BaseModel):
-    """
-    Модель записи из истории продаж
-
-    TODO: Адаптировать поля под реальный JSON из API
-    Возможные поля (примерные):
-    - price: int | float
-    - amount: int
-    - sold_at: datetime
-    - buyer: str | None
-    - seller: str | None
-    """
-
-    price: int = Field(..., description="Цена продажи")
-    amount: int = Field(default=1, description="Количество проданных предметов")
-    sold_at: datetime | None = Field(default=None, description="Время продажи")
-
-    # Дополнительные поля - раскомментировать после проверки API
-    # buyer: str | None = None
-    # seller: str | None = None
-
-    class Config:
-        extra = "allow"  # Разрешить дополнительные поля из API
+        json_schema_extra = {
+            "example": {
+                "itemId": "y1q9",
+                "amount": 5,
+                "startPrice": 10000,
+                "currentPrice": 12000,
+                "buyoutPrice": 15000,
+                "startTime": "2026-01-12T10:00:00Z",
+                "endTime": "2026-01-13T10:00:00Z",
+                "additional": {},
+            }
+        }
 
 
 class AuctionLotsResponse(BaseModel):
-    """Ответ со списком активных лотов"""
+    """Ответ API со списком активных лотов"""
 
-    item_id: str
-    region: str
-    lots: list[AuctionLot]
-    total: int = Field(default=0, description="Общее количество лотов")
-
-    # Сырые данные для отладки
-    raw_data: dict[str, Any] | None = Field(
-        default=None, description="Сырой ответ API (для отладки)"
+    total: int = Field(
+        ..., description="Общее количество лотов в базе (не только в ответе)"
     )
+    lots: list[AuctionLot] = Field(default_factory=list, description="Список лотов")
+
+
+class AuctionPriceHistory(BaseModel):
+    """
+    Запись из истории продаж
+
+    Структура из реального API Stalcraft
+    """
+
+    amount: int = Field(..., description="Количество проданных предметов")
+    price: int = Field(..., description="Цена продажи")
+    time: datetime = Field(..., description="Время продажи (UTC)")
+    additional: dict[str, Any] = Field(
+        default_factory=dict, description="Дополнительная информация (если запрошена)"
+    )
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "amount": 3,
+                "price": 14500,
+                "time": "2026-01-12T14:30:00Z",
+                "additional": {},
+            }
+        }
 
 
 class AuctionHistoryResponse(BaseModel):
-    """Ответ с историей продаж"""
+    """Ответ API с историей продаж"""
 
-    item_id: str
-    region: str
-    history: list[AuctionHistoryItem]
-    total: int = Field(default=0, description="Общее количество записей")
-
-    # Сырые данные для отладки
-    raw_data: dict[str, Any] | None = Field(
-        default=None, description="Сырой ответ API (для отладки)"
+    total: int = Field(..., description="Общее количество записей в базе")
+    prices: list[AuctionPriceHistory] = Field(
+        default_factory=list, description="История цен (отсортирована по времени)"
     )

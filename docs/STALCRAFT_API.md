@@ -1,6 +1,96 @@
-# Stalcraft API Documentation
+# Stalcraft API - Аукцион
 
-Документация по Stalcraft API для SC-AUC-Monitoring
+## Endpoints
+
+### 1. Получение активных лотов
+
+**Endpoint:** `GET /{region}/auction/{item}/lots`
+
+**URL:** `https://eapi.stalcraft.net/{region}/auction/{item}/lots`
+
+**Path параметры:**
+- `region` (string, required) - Регион: EU, RU, NA, SEA
+- `item` (string, required) - ID предмета (например, "y1q9")
+
+**Query параметры:**
+- `additional` (string) - "true" или "false", по умолчанию "false"
+- `limit` (string) - Количество лотов (0-200), по умолчанию 20
+- `offset` (string) - Сдвиг в списке, по умолчанию 0
+- `order` (string) - "asc" или "desc"
+- `sort` (string) - "time_created", "time_left", "current_price", "buyout_price"
+
+**Структура ответа:**
+```json
+{
+  "total": 150,
+  "lots": [
+    {
+      "itemId": "y1q9",
+      "amount": 5,
+      "startPrice": 10000,
+      "currentPrice": 12000,
+      "buyoutPrice": 15000,
+      "startTime": "2026-01-12T10:00:00Z",
+      "endTime": "2026-01-13T10:00:00Z",
+      "additional": {}
+    }
+  ]
+}
+```
+
+### 2. Получение истории цен
+
+**Endpoint:** `GET /{region}/auction/{item}/history`
+
+**URL:** `https://eapi.stalcraft.net/{region}/auction/{item}/history`
+
+**Path параметры:**
+- `region` (string, required) - Регион: EU, RU, NA, SEA
+- `item` (string, required) - ID предмета
+
+**Query параметры:**
+- `additional` (string) - "true" или "false", по умолчанию "false"
+- `limit` (string) - Количество записей (0-200), по умолчанию 20
+- `offset` (string) - Сдвиг в списке, по умолчанию 0
+
+**Структура ответа:**
+```json
+{
+  "total": 500,
+  "prices": [
+    {
+      "amount": 3,
+      "price": 14500,
+      "time": "2026-01-12T14:30:00Z",
+      "additional": {}
+    }
+  ]
+}
+```
+
+## Примеры использования
+
+### Python (httpx)
+```python
+import httpx
+
+async def get_lots():
+    url = "https://eapi.stalcraft.net/EU/auction/y1q9/lots"
+    headers = {"Authorization": "Bearer YOUR_TOKEN"}
+    params = {"limit": 50, "sort": "current_price", "order": "asc"}
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers, params=params)
+        return response.json()
+```
+
+### Curl
+```bash
+curl -X GET \
+  'https://eapi.stalcraft.net/EU/auction/y1q9/lots?limit=50&sort=current_price&order=asc' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Content-Type: application/json'
+```
 
 ## Обзор
 
@@ -8,19 +98,11 @@ Stalcraft предоставляет два API:
 - **Demo API** (`dapi.stalcraft.net`) - для тестирования, без авторизации
 - **Production API** (`eapi.stalcraft.net`) - требует Bearer token
 
-## API Endpoints
-
-### Base URLs
+## API Base URLs
 
 ```
 Demo:       https://dapi.stalcraft.net
 Production: https://eapi.stalcraft.net
-```
-
-### Формат endpoints
-
-```
-https://{host}/{region}/auction/{item_id}/{endpoint}
 ```
 
 ## Регионы
@@ -46,91 +128,6 @@ Authorization: Bearer YOUR_TOKEN_HERE
 1. Зарегистрироваться на официальном сайте Stalcraft
 2. Получить API token в личном кабинете
 3. Использовать в заголовке запросов
-
-## Auction Endpoints
-
-### 1. Get Auction Lots
-
-Получить активные лоты аукциона для предмета.
-
-**Endpoint:**
-```
-GET /{region}/auction/{item_id}/lots
-```
-
-**Parameters:**
-- `region` (path) - Регион (EU, RU, NA, SEA)
-- `item_id` (path) - ID предмета из stalcraft-database
-
-**Example Request:**
-```bash
-# Demo API
-curl https://dapi.stalcraft.net/EU/auction/weapon_rifle_ak47/lots
-
-# Production API
-curl -H "Authorization: Bearer YOUR_TOKEN" \
-  https://eapi.stalcraft.net/EU/auction/weapon_rifle_ak47/lots
-```
-
-**Expected Response Structure:**
-```json
-{
-  "lots": [
-    {
-      "price": 5000,
-      "amount": 1,
-      "time_left": "2h 30m",
-      "seller": "player_name",
-      "created_at": "2026-01-11T12:00:00Z"
-    }
-  ],
-  "total": 1
-}
-```
-
-⚠️ **TODO**: Структура ответа примерная. Необходимо проверить с реальным API.
-
-### 2. Get Auction History
-
-Получить историю продаж предмета.
-
-**Endpoint:**
-```
-GET /{region}/auction/{item_id}/history
-```
-
-**Parameters:**
-- `region` (path) - Регион (EU, RU, NA, SEA)
-- `item_id` (path) - ID предмета
-- `limit` (query, optional) - Количество записей (default: 50)
-
-**Example Request:**
-```bash
-# Demo API
-curl "https://dapi.stalcraft.net/EU/auction/weapon_rifle_ak47/history?limit=20"
-
-# Production API
-curl -H "Authorization: Bearer YOUR_TOKEN" \
-  "https://eapi.stalcraft.net/EU/auction/weapon_rifle_ak47/history?limit=20"
-```
-
-**Expected Response Structure:**
-```json
-{
-  "history": [
-    {
-      "price": 4800,
-      "amount": 1,
-      "sold_at": "2026-01-11T10:30:00Z",
-      "buyer": "player_name",
-      "seller": "another_player"
-    }
-  ],
-  "total": 1
-}
-```
-
-⚠️ **TODO**: Структура ответа примерная. Необходимо проверить с реальным API.
 
 ## Items Database
 
@@ -187,28 +184,6 @@ https://raw.githubusercontent.com/EXBO-Studio/stalcraft-database/main/{realm}/ic
 https://raw.githubusercontent.com/EXBO-Studio/stalcraft-database/main/global/icons/weapons/rifles/ak47.png
 ```
 
-### Item JSON Structure
-
-⚠️ **TODO**: Изучить реальную структуру JSON из репозитория.
-
-Предполагаемая структура:
-```json
-{
-  "id": "weapon_rifle_ak47",
-  "name": "AK-47",
-  "name_ru": "АК-47",
-  "description": "Assault rifle",
-  "category": "weapons",
-  "subcategory": "rifles",
-  "rarity": "rare",
-  "stats": {
-    "damage": 45,
-    "accuracy": 70,
-    "range": 80
-  }
-}
-```
-
 ## Тестирование API
 
 ### Скрипт test_api.py
@@ -229,7 +204,7 @@ python scripts/test_api.py
 Отредактируйте переменные:
 ```python
 REGION = "EU"  # Ваш регион
-ITEM_ID = "real_item_id"  # Реальный ID предмета
+ITEM_ID = "y1q9"  # Реальный ID предмета
 ```
 
 ### Результаты
@@ -238,53 +213,7 @@ ITEM_ID = "real_item_id"  # Реальный ID предмета
 - `docs/auction_lots_example_EU_item_id.json`
 - `docs/auction_history_example_EU_item_id.json`
 
-Используйте эти файлы для:
-1. Изучения реальной структуры API
-2. Адаптации моделей в `app/models/auction.py`
-3. Обновления парсинга в `app/services/auction_service.py`
-
-## Адаптация кода под реальный API
-
-### Шаг 1: Получить реальные данные
-
-```bash
-python scripts/test_api.py
-```
-
-### Шаг 2: Изучить структуру
-
-Откройте `docs/auction_lots_example_*.json` и изучите поля.
-
-### Шаг 3: Обновить модели
-
-В `app/models/auction.py`:
-```python
-class AuctionLot(BaseModel):
-    # Раскомментируйте и добавьте реальные поля
-    price: int
-    amount: int
-    time_left: str | None = None
-    seller: str | None = None  # Раскомментировать если есть в API
-    created_at: datetime | None = None  # Раскомментировать если есть в API
-```
-
-### Шаг 4: Обновить парсинг
-
-В `app/services/auction_service.py`:
-```python
-async def get_lots(self, region: str, item_id: str):
-    raw_data = await stalcraft_client.get_auction_lots(region, item_id)
-    
-    # Адаптировать под реальную структуру
-    lots_data = raw_data.get("lots", [])  # Или другой ключ
-    
-    # Парсинг
-    lots = [AuctionLot(**lot_data) for lot_data in lots_data]
-```
-
 ## Rate Limits
-
-⚠️ **TODO**: Узнать ограничения rate limits из официальной документации.
 
 Рекомендации:
 - Кэшировать запросы
@@ -350,45 +279,26 @@ from app.config import settings
 api_url = settings.api_base_url
 ```
 
-## Официальная документация
-
-⚠️ **TODO**: Добавить ссылки на официальную Stalcraft API документацию когда будет доступна.
-
-Проверьте:
-- Официальный сайт Stalcraft
-- Discord сообщество
-- GitHub репозитории
-
-## Примеры использования
-
-### Python (httpx)
-
-```python
-import httpx
-
-async def get_auction_data(region, item_id):
-    url = f"https://dapi.stalcraft.net/{region}/auction/{item_id}/lots"
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url, timeout=10.0)
-        return response.json()
-```
-
-### cURL
-
-```bash
-# Get lots
-curl "https://dapi.stalcraft.net/EU/auction/item_id/lots"
-
-# Get history with limit
-curl "https://dapi.stalcraft.net/EU/auction/item_id/history?limit=20"
-```
+## Примеры использования (JavaScript)
 
 ### JavaScript (fetch)
 
 ```javascript
 async function getAuctionLots(region, itemId) {
-    const url = `https://dapi.stalcraft.net/${region}/auction/${itemId}/lots`;
-    const response = await fetch(url);
+    const url = `https://eapi.stalcraft.net/${region}/auction/${itemId}/lots`;
+    const params = new URLSearchParams({
+        limit: '50',
+        sort: 'current_price',
+        order: 'asc'
+    });
+    
+    const response = await fetch(`${url}?${params}`, {
+        headers: {
+            'Authorization': 'Bearer YOUR_TOKEN',
+            'Content-Type': 'application/json'
+        }
+    });
+    
     return await response.json();
 }
 ```
@@ -404,7 +314,7 @@ async function getAuctionLots(region, itemId) {
 
 ---
 
-**Version**: 0.1.0  
-**Last Updated**: 2026-01-11
+**Version**: 1.0.0  
+**Last Updated**: 2026-01-12
 
-⚠️ **Важно**: Эта документация основана на предположениях. После получения реального доступа к API необходимо обновить все примеры и структуры данных.
+✅ **Документация обновлена**: Эта документация основана на официальной структуре Stalcraft API.
