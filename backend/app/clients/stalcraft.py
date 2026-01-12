@@ -8,26 +8,33 @@ class StalcraftAPIClient:
     """
     Клиент для работы с Stalcraft API
     Поддерживает Demo и Production API
+
+    ВАЖНО: Demo API тоже требует токен авторизации!
     """
 
     def __init__(self):
         self.base_url = settings.api_base_url
-        self.use_demo = settings.USE_DEMO_API
-        self.token = settings.STALCRAFT_API_TOKEN
         self.timeout = 10.0
 
     def _get_headers(self) -> dict[str, str]:
-        """Заголовки - авторизация только для prod API"""
-        headers = {"Content-Type": "application/json"}
+        """
+        Заголовки для запросов
 
-        if not self.use_demo:
-            if not self.token:
-                raise StalcraftAPIError(
-                    "STALCRAFT_API_TOKEN required for production API"
-                )
-            headers["Authorization"] = f"Bearer {self.token}"
+        ВАЖНО: И Demo, и Production API требуют Authorization токен!
+        """
+        token = settings.api_token
 
-        return headers
+        if not token:
+            api_type = "Demo" if settings.USE_DEMO_API else "Production"
+            raise StalcraftAPIError(
+                f"{api_type} API token is required. "
+                f"Set STALCRAFT_{'DEMO' if settings.USE_DEMO_API else 'PROD'}_TOKEN in .env"
+            )
+
+        return {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {token}",
+        }
 
     async def get_auction_lots(
         self,

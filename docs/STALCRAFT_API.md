@@ -95,7 +95,7 @@ curl -X GET \
 ## Обзор
 
 Stalcraft предоставляет два API:
-- **Demo API** (`dapi.stalcraft.net`) - для тестирования, без авторизации
+- **Demo API** (`dapi.stalcraft.net`) - для тестирования, требует токен авторизации
 - **Production API** (`eapi.stalcraft.net`) - требует Bearer token
 
 ## API Base URLs
@@ -115,19 +115,42 @@ Production: https://eapi.stalcraft.net
 
 ## Авторизация
 
+**ВАЖНО**: И Demo, и Production API требуют токен авторизации!
+
 ### Demo API
-Авторизация **не требуется**.
+
+URL: `https://dapi.stalcraft.net`
+
+**Публичный App Access Token** (встроен в проект):
+```
+eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwibmJmIjoxNjczNzk3ODM4LCJleHAiOjQ4MjczOTc4MzgsImlhdCI6MTY3Mzc5NzgzOCwianRpIjoiYXhwbzAzenJwZWxkMHY5dDgzdzc1N2x6ajl1MmdyeHVodXVlb2xsZ3M2dml1YjVva3NwZTJ3eGFrdjJ1eWZxaDU5ZDE2ZTNlN2FqdW16Z3gifQ.ZNSsvwAX72xT5BzLqqYABuH2FGbOlfiXMK5aYO1H5llG51ZjcPvOYBDRR4HUoPZVLFY8jyFUsEXNM7SYz8qL9ePmLjJl6pib8FEtqVPmf9ldXvKkbaaaSp4KkJzsIEMY_Z5PejB2Vr-q-cL13KPgnLGUaSW-2X_sHPN7VZJNMjRgjw4mPiRZTe4CEpQq0BEcPrG6OLtU5qlZ6mLDJBjN2xtK0DI6xgmYriw_5qW1mj1nqF_ewtUiQ1KTVhDgXnaNUdkGsggAGqyicTei0td6DTKtnl3noD5VkipWn_CwSqb2Mhm16I9BPfX_d5ARzWrnrwPRUf6PA_7LipNU6KkkW0mhZfmwEPTm_sXPus0mHPENoVZArdFT3L5sOYBcpqwvVIEtxRUTdcsKp-y-gSzao5muoyPVoCc2LEeHEWx0cIi9spsZ46SPRQpN4baVFp7y5rp5pjRsBKHQYUJ0lTmh1_vyfzOzbtNN2v6W_5w9JTLrN1U6fhmifvKHppFSEqD6DameL1TC59kpIdufRkEU9HE4O-ErEf1GuJFRx-Dew6XDvb_ExhvEqcw31yNvKzpVqLYJfLazqn6tUbVuAiPwpy6rP9tYO2taT1vj5TGn_vxwDu9zoLWe796tFMPS-kmbCglxB5C9L4EbpfWNbWxYjUkTvjT2Ml9OnrB0UbYo1jI
+```
+
+Этот токен работает до 2099 года и доступен всем.
 
 ### Production API
-Требуется Bearer token в заголовке:
-```
-Authorization: Bearer YOUR_TOKEN_HERE
+
+URL: `https://eapi.stalcraft.net`
+
+Требует регистрацию на https://exbo.net/oauth/developers
+
+### Заголовки запроса
+
+Все запросы должны содержать:
+
+```http
+Authorization: Bearer YOUR_TOKEN
+Content-Type: application/json
 ```
 
-Получение токена:
-1. Зарегистрироваться на официальном сайте Stalcraft
-2. Получить API token в личном кабинете
-3. Использовать в заголовке запросов
+### Пример запроса
+
+```bash
+curl -X GET \
+  'https://dapi.stalcraft.net/EU/auction/y1q9/lots' \
+  -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...' \
+  -H 'Content-Type: application/json'
+```
 
 ## Items Database
 
@@ -263,11 +286,12 @@ except httpx.HTTPStatusError as e:
 # Demo API (тестирование)
 USE_DEMO_API=true
 STALCRAFT_DEMO_HOST=dapi.stalcraft.net
+STALCRAFT_DEMO_TOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...
 
 # Production API
 USE_DEMO_API=false
 STALCRAFT_PROD_HOST=eapi.stalcraft.net
-STALCRAFT_API_TOKEN=your_token_here
+STALCRAFT_PROD_TOKEN=your_token_here
 ```
 
 ### Переключение в коде
