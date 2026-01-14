@@ -6,7 +6,7 @@
 
 Базовый просмотр рынка:
 - Выбор региона (EU/RU/NA/SEA)
-- Выбор предмета
+- ⚡ Быстрый поиск предметов (< 10ms) с локальной базой данных
 - Просмотр активных лотов
 - История продаж
 
@@ -54,6 +54,50 @@ cd ..
 http://localhost:8000
 API Docs: http://localhost:8000/api/docs
 ```
+
+## Items Database
+
+The application uses a local cache of items from [stalcraft-database](https://github.com/EXBO-Studio/stalcraft-database) for fast search.
+
+### First Run
+
+On first startup, the application will automatically download and index the items database (~2-3 minutes). The cache is stored in `backend/data/items_cache/`.
+
+### Auto-Update
+
+The cache automatically updates every 24 hours. You can also manually update:
+
+#### Using CLI
+```bash
+# Update all realms
+python scripts/update_items_db.py --force
+
+# Update only RU
+python scripts/update_items_db.py --realms ru --force
+```
+
+#### Using Makefile
+```bash
+make update-items-db
+make update-items-db-ru
+```
+
+#### Using API
+```bash
+curl -X POST "http://localhost:8000/api/v1/items/update-database?realms=ru"
+```
+
+### Performance
+
+- **Search speed**: < 10ms (vs 3-10 seconds with GitHub API)
+- **Cache size**: ~5-10 MB for both realms
+- **Update time**: 2-3 minutes for full update
+- **Auto-refresh**: Every 24 hours
+
+### Cache Location
+
+- Index: `backend/data/items_cache/search_index.json`
+- Metadata: `backend/data/items_cache/metadata.json`
 
 ## 📁 Структура проекта
 
