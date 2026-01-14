@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Any, Literal
+from typing import Any, Literal, Optional
 
 
 # Типы для параметров запроса
@@ -18,7 +18,8 @@ class AuctionLot(BaseModel):
     itemId: str = Field(..., description="ID предмета")
     amount: int = Field(..., description="Количество предметов в лоте")
     startPrice: int = Field(..., description="Начальная цена")
-    currentPrice: int = Field(..., description="Текущая цена")
+    # Сделать опциональным, т.к. Demo API может не возвращать это поле
+    currentPrice: Optional[int] = Field(None, description="Текущая цена")
     buyoutPrice: int = Field(..., description="Цена немедленного выкупа")
     startTime: datetime = Field(..., description="Время создания лота")
     endTime: datetime = Field(..., description="Время окончания лота")
@@ -27,6 +28,9 @@ class AuctionLot(BaseModel):
     )
 
     class Config:
+        # Разрешить дополнительные поля, которые не описаны в модели
+        extra = "ignore"
+
         json_schema_extra = {
             "example": {
                 "itemId": "y1q9",
@@ -65,6 +69,9 @@ class AuctionPriceHistory(BaseModel):
     )
 
     class Config:
+        # Разрешить дополнительные поля, которые не описаны в модели
+        extra = "ignore"
+        
         json_schema_extra = {
             "example": {
                 "amount": 3,
