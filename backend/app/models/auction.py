@@ -71,7 +71,7 @@ class AuctionPriceHistory(BaseModel):
     class Config:
         # Разрешить дополнительные поля, которые не описаны в модели
         extra = "ignore"
-        
+
         json_schema_extra = {
             "example": {
                 "amount": 3,
