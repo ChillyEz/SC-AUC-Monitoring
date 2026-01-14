@@ -13,13 +13,13 @@ from app.models.auction import (
 from app.services.auction_service import auction_service
 from app.core.exceptions import StalcraftAPIError, InvalidRegionError
 
-router = APIRouter(tags=["Auction"])
+router = APIRouter(prefix="/auction", tags=["Auction"])
 
-Region = Literal["EU", "RU", "NA", "SEA"]
+Region = Literal["eu", "ru", "na", "sea"]
 
 
 @router.get(
-    "/{region}/auction/{item_id}/lots",
+    "/{region}/{item_id}/lots",
     response_model=AuctionLotsResponse,
     summary="Получить активные лоты",
     description="Возвращает список активных лотов для указанного предмета на аукционе",
@@ -68,7 +68,7 @@ async def get_auction_lots(
 
 
 @router.get(
-    "/{region}/auction/{item_id}/history",
+    "/{region}/{item_id}/history",
     response_model=AuctionHistoryResponse,
     summary="Получить историю продаж",
     description="Возвращает историю цен для предмета, отсортированную по времени покупки",
