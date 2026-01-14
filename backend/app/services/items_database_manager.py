@@ -70,8 +70,7 @@ class ItemsDatabaseManager:
         else:
             print("📦 Loading items database from cache...")
             self._load_from_cache()
-            total_items = sum(len(items) for items in self.search_index.values())
-            print(f"✅ Items database ready! Indexed {total_items} items")
+            print(f"✅ Items database ready! Indexed {self.get_total_items()} items")
 
     async def update_database(self, realms: Optional[list[str]] = None) -> None:
         """
@@ -104,9 +103,8 @@ class ItemsDatabaseManager:
 
         # Save to cache
         self._save_to_cache()
-        total_items = sum(len(items) for items in self.search_index.values())
         print("💾 Database cached successfully!")
-        print(f"✅ Items database ready! Indexed {total_items} items")
+        print(f"✅ Items database ready! Indexed {self.get_total_items()} items")
 
     async def _download_realm_items(self, realm: str) -> list[dict]:
         """
@@ -309,6 +307,14 @@ class ItemsDatabaseManager:
             )
 
         return None
+
+    def get_total_items(self) -> int:
+        """Get total number of indexed items across all realms"""
+        return sum(len(items) for items in self.search_index.values())
+
+    def load_from_cache(self) -> None:
+        """Public method to load database from cache"""
+        self._load_from_cache()
 
     def is_cache_available(self) -> bool:
         """Public method to check if cache is available"""

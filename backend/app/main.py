@@ -74,7 +74,5 @@ async def health():
             if items_db_manager.last_update
             else None
         ),
-        "items_db_total": sum(
-            len(items) for items in items_db_manager.search_index.values()
-        ),
+        "items_db_total": items_db_manager.get_total_items(),
     }

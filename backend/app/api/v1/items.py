@@ -84,9 +84,7 @@ async def update_database(
         return {
             "status": "success",
             "message": f"Database updated for realms: {', '.join(realms)}",
-            "total_items": sum(
-                len(items) for items in items_service.db_manager.search_index.values()
-            ),
+            "total_items": items_service.db_manager.get_total_items(),
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Update failed: {str(e)}")

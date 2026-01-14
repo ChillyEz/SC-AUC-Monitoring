@@ -46,10 +46,8 @@ async def main():
             await items_db_manager.update_database(args.realms)
         else:
             print("📦 Cache exists and is fresh. Use --force to update anyway.")
-            items_db_manager._load_from_cache()
-            total_items = sum(
-                len(items) for items in items_db_manager.search_index.values()
-            )
+            items_db_manager.load_from_cache()
+            total_items = items_db_manager.get_total_items()
             print(f"✅ Database loaded from cache. Total items: {total_items}")
 
         print("=" * 50)
