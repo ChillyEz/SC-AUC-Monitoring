@@ -24,6 +24,8 @@ class ItemsDatabaseManager:
 
         # In-memory search index: {realm: [items]}
         self.search_index: dict[str, list[dict]] = {}
+        # In-memory ID lookup: {realm: {id: item}}
+        self.id_lookup: dict[str, dict[str, dict]] = {}
         self.last_update: Optional[datetime] = None
 
         # Categories to index
@@ -86,12 +88,15 @@ class ItemsDatabaseManager:
         # Clear existing index for specified realms
         for realm in realms:
             self.search_index[realm] = []
+            self.id_lookup[realm] = {}
 
         # Download and index items for each realm
         for realm in realms:
             print(f"  → Indexing realm: {realm}")
             realm_items = await self._download_realm_items(realm)
             self.search_index[realm] = realm_items
+            # Build ID lookup for O(1) access
+            self.id_lookup[realm] = {item["id"]: item for item in realm_items}
             print(f"  ✅ Realm {realm}: {len(realm_items)} items indexed")
 
         # Update metadata
@@ -283,7 +288,7 @@ class ItemsDatabaseManager:
         self, item_id: str, realm: str = "ru"
     ) -> Optional[ItemSearchResult]:
         """
-        Get item by ID
+        Get item by ID (O(1) lookup)
 
         Args:
             item_id: Item ID
@@ -292,18 +297,22 @@ class ItemsDatabaseManager:
         Returns:
             ItemSearchResult or None if not found
         """
-        realm_items = self.search_index.get(realm, [])
+        # Use O(1) dictionary lookup
+        item = self.id_lookup.get(realm, {}).get(item_id)
 
-        for item in realm_items:
-            if item["id"] == item_id:
-                return ItemSearchResult(
-                    id=item["id"],
-                    name=item["name"],
-                    category=item["category"],
-                    icon_url=item["icon_url"],
-                )
+        if item:
+            return ItemSearchResult(
+                id=item["id"],
+                name=item["name"],
+                category=item["category"],
+                icon_url=item["icon_url"],
+            )
 
         return None
+
+    def is_cache_available(self) -> bool:
+        """Public method to check if cache is available"""
+        return self._cache_exists()
 
     def _cache_exists(self) -> bool:
         """Check if cache file exists"""
@@ -329,6 +338,11 @@ class ItemsDatabaseManager:
             with open(self.cache_file, "r", encoding="utf-8") as f:
                 self.search_index = json.load(f)
 
+            # Rebuild ID lookup for fast access
+            self.id_lookup = {}
+            for realm, items in self.search_index.items():
+                self.id_lookup[realm] = {item["id"]: item for item in items}
+
             # Load metadata
             with open(self.metadata_file, "r", encoding="utf-8") as f:
                 metadata = json.load(f)
@@ -339,6 +353,7 @@ class ItemsDatabaseManager:
         except Exception as e:
             print(f"⚠️  Failed to load cache: {str(e)}")
             self.search_index = {}
+            self.id_lookup = {}
             self.last_update = None
 
     def _save_to_cache(self) -> None:

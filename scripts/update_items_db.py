@@ -16,7 +16,7 @@ from pathlib import Path
 backend_path = Path(__file__).parent.parent / "backend"
 sys.path.insert(0, str(backend_path))
 
-from app.services.items_database_manager import items_db_manager
+from app.services.items_database_manager import items_db_manager  # noqa: E402
 
 
 async def main():
@@ -41,7 +41,7 @@ async def main():
     print("=" * 50)
 
     try:
-        if args.force or not items_db_manager._cache_exists():
+        if args.force or not items_db_manager.is_cache_available():
             print(f"📥 Updating database for realms: {', '.join(args.realms)}")
             await items_db_manager.update_database(args.realms)
         else:
