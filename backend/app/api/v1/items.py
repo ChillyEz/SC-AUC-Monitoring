@@ -46,16 +46,19 @@ async def list_items(
 
 @router.get("/{item_id}", response_model=Item)
 async def get_item(
-    item_id: str, realm: str = Query(default="global", description="Realm (global, ru)")
+    item_id: str,
+    category: str = Query(..., description="Категория предмета (weapon/pistol, etc)"),
+    realm: str = Query(default="global", description="Realm (global, ru)"),
 ):
     """
     Получить информацию о предмете
 
     - **item_id**: ID предмета
+    - **category**: Категория предмета
     - **realm**: Realm (global или ru)
     """
     try:
-        return await items_service.get_item(item_id, realm)
+        return await items_service.get_item(item_id, category, realm)
     except ItemNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
