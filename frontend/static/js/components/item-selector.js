@@ -105,13 +105,32 @@ class ItemSelector {
             itemDiv.dataset.itemId = item.id;
             itemDiv.dataset.category = item.category;
             
-            itemDiv.innerHTML = `
-                <img src="${item.icon_url || ''}" alt="${item.name}" class="item-icon" onerror="this.style.display='none'">
-                <div class="item-info">
-                    <div class="item-name">${item.name}</div>
-                    <div class="item-id">${item.id}</div>
-                </div>
-            `;
+            // Create icon element
+            const icon = document.createElement('img');
+            icon.src = item.icon_url || '';
+            icon.alt = item.name;
+            icon.className = 'item-icon';
+            icon.onerror = function() { this.style.display = 'none'; };
+            
+            // Create info container
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'item-info';
+            
+            // Create name element (using textContent for safety)
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'item-name';
+            nameDiv.textContent = item.name;
+            
+            // Create ID element (using textContent for safety)
+            const idDiv = document.createElement('div');
+            idDiv.className = 'item-id';
+            idDiv.textContent = item.id;
+            
+            // Assemble the structure
+            infoDiv.appendChild(nameDiv);
+            infoDiv.appendChild(idDiv);
+            itemDiv.appendChild(icon);
+            itemDiv.appendChild(infoDiv);
             
             itemDiv.addEventListener('click', () => {
                 this.selectItem(item);

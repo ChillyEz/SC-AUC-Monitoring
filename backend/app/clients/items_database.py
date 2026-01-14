@@ -161,6 +161,7 @@ class ItemsDatabaseClient:
         """
         query_lower = query.lower()
         results = []
+        failed_categories = 0
 
         # Search across all categories
         for category in self.categories:
@@ -179,8 +180,13 @@ class ItemsDatabaseClient:
                     ):
                         results.append(item)
             except Exception:
-                # Continue to next category if this one fails
+                # Count failed categories
+                failed_categories += 1
                 continue
+
+        # If all categories failed, this indicates a systemic issue
+        if failed_categories == len(self.categories) and len(results) == 0:
+            raise Exception("Failed to search items: unable to access item database")
 
         return results
 
