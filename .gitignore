@@ -45,6 +45,11 @@ htmlcov/
 # Data
 backend/data/stalcraft-database/
 
+# Items database cache
+backend/data/items_cache/
+*.json
+!backend/data/.gitkeep
+
 # Docker
 docker-compose.override.yml
 
