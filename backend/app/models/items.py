@@ -1,26 +1,46 @@
 from pydantic import BaseModel, Field
+from typing import Optional
 
-# from typing import Any
+
+class ItemName(BaseModel):
+    """Translatable item name"""
+
+    type: str  # "translation" or "text"
+    key: Optional[str] = None
+    lines: Optional[dict[str, str]] = None  # {"ru": "название", "en": "name"}
+    text: Optional[str] = None  # For type="text"
 
 
 class Item(BaseModel):
     """
-    Модель предмета из базы данных Stalcraft
-
-    TODO: Адаптировать под структуру из stalcraft-database репозитория
+    Item model from stalcraft-database repository
+    Based on structure from https://github.com/EXBO-Studio/stalcraft-database/
     """
 
-    id: str = Field(..., description="ID предмета")
-    name: str = Field(..., description="Название предмета")
-    category: str | None = Field(default=None, description="Категория")
-    subcategory: str | None = Field(default=None, description="Подкатегория")
+    id: str = Field(..., description="Item ID")
+    category: str = Field(..., description="Category (weapon/pistol)")
+    name: ItemName = Field(..., description="Translatable name")
+    color: Optional[str] = Field(None, description="Item color/rank")
+
+    # Additional fields for UI
+    display_name: Optional[str] = Field(None, description="Display name")
+    icon_url: Optional[str] = Field(None, description="Icon URL")
 
     class Config:
-        extra = "allow"
+        extra = "allow"  # Allow additional fields from JSON
+
+
+class ItemSearchResult(BaseModel):
+    """Search result (simplified version)"""
+
+    id: str
+    name: str
+    category: str
+    icon_url: Optional[str] = None
 
 
 class ItemsListResponse(BaseModel):
-    """Ответ со списком предметов"""
+    """Response with list of items"""
 
-    items: list[Item]
-    total: int = Field(default=0, description="Общее количество предметов")
+    items: list[ItemSearchResult]
+    total: int = Field(default=0, description="Total number of items")

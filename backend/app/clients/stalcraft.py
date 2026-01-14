@@ -18,7 +18,7 @@ class StalcraftAPIClient:
     def _get_headers(self) -> dict[str, str]:
         """Заголовки с авторизацией для всех запросов"""
         headers = {"Content-Type": "application/json"}
-        
+
         if self.api_source == "wiki":
             # Wiki API uses X-Internal-Key header
             headers["X-Internal-Key"] = settings.STALCRAFT_WIKI_API_KEY
@@ -28,7 +28,7 @@ class StalcraftAPIClient:
             if not token:
                 raise StalcraftAPIError("STALCRAFT API token is required")
             headers["Authorization"] = f"Bearer {token}"
-        
+
         return headers
 
     def _build_url(self, endpoint: str, region: str, item_id: str) -> str:
