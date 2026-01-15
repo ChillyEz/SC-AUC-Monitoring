@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     ITEMS_DB_SOURCE: Literal["github", "local"] = "github"
     GITHUB_DB_REPO: str = "EXBO-Studio/stalcraft-database"
     GITHUB_DB_BRANCH: str = "main"
+    GITHUB_TOKEN:  str = ""  # GitHub token для API запросов
 
     # CORS
     CORS_ORIGINS: list[str] = ["http://localhost:8000", "http://127.0.0.1:8000"]

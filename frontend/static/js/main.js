@@ -11,14 +11,14 @@ const itemSelector = new ItemSelector(
 
 // UI elements
 const lotsContainer = document.getElementById('lots-container');
-const lotsLoading = document.getElementById('lots-loading');
+const lotsLoading = document. getElementById('lots-loading');
 const lotsError = document.getElementById('lots-error');
 
 const historyContainer = document.getElementById('history-container');
 const historyLoading = document.getElementById('history-loading');
 const historyError = document.getElementById('history-error');
 
-const apiBadge = document.getElementById('api-badge');
+const apiBadge = document. getElementById('api-badge');
 
 /**
  * Load and display auction data
@@ -36,11 +36,11 @@ async function loadAuctionData(region, itemId) {
     
     // Load lots
     try {
-        const lotsData = await apiClient.getAuctionLots(region, itemId);
+        const lotsData = await apiClient. getAuctionLots(region, itemId);
         lotsLoading.style.display = 'none';
         AuctionTable.renderLotsTable(lotsData.lots, lotsContainer);
     } catch (error) {
-        lotsLoading.style.display = 'none';
+        lotsLoading. style.display = 'none';
         lotsError.textContent = `Ошибка загрузки лотов: ${error.message}`;
         lotsError.style.display = 'block';
     }
@@ -49,11 +49,12 @@ async function loadAuctionData(region, itemId) {
     try {
         const historyData = await apiClient.getAuctionHistory(region, itemId, 50);
         historyLoading.style.display = 'none';
-        AuctionTable.renderHistoryTable(historyData.history, historyContainer);
+        // ← ИСПРАВИТЬ: API возвращает "prices", а не "history"
+        AuctionTable.renderHistoryTable(historyData.prices, historyContainer);
     } catch (error) {
         historyLoading.style.display = 'none';
         historyError.textContent = `Ошибка загрузки истории: ${error.message}`;
-        historyError.style.display = 'block';
+        historyError.style. display = 'block';
     }
 }
 
@@ -87,7 +88,7 @@ async function initApp() {
     } catch (error) {
         console.error('Failed to initialize app:', error);
         apiBadge.textContent = 'API Error';
-        apiBadge.style.background = '#ef4444';
+        apiBadge.style. background = '#ef4444';
     }
 }
 

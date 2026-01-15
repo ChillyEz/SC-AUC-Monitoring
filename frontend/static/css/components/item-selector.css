@@ -103,3 +103,19 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+.autocomplete-loading,
+.autocomplete-error,
+.autocomplete-empty {
+    padding: 15px;
+    text-align: center;
+    color: var(--text-muted, #888);
+}
+
+.autocomplete-error {
+    color: #ff6b6b;
+}
+
+. autocomplete-loading {
+    color: #4dabf7;
+}

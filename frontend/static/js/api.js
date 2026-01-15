@@ -32,7 +32,7 @@ class APIClient {
                 const error = await response.json();
                 throw new Error(error.detail || 'Failed to fetch auction history');
             }
-            return await response.json();
+            return await response. json();
         } catch (error) {
             console.error('Error fetching auction history:', error);
             throw error;
@@ -41,17 +41,26 @@ class APIClient {
 
     /**
      * Search items
+     * @param {string} query - Search query
+     * @param {string} realm - Realm (global, ru)
+     * @param {AbortSignal} signal - Abort signal for cancellation
      */
-    async searchItems(query, realm = 'global') {
+    async searchItems(query, realm = 'global', signal = null) {
         try {
-            const response = await fetch(`${API_BASE}/items/search?query=${encodeURIComponent(query)}&realm=${realm}`);
+            const url = `${API_BASE}/items/search?query=${encodeURIComponent(query)}&realm=${realm}`;
+            const options = signal ? { signal } : {};
+            
+            const response = await fetch(url, options);
             if (!response.ok) {
                 const error = await response.json();
                 throw new Error(error.detail || 'Failed to search items');
             }
             return await response.json();
         } catch (error) {
-            console.error('Error searching items:', error);
+            // Don't log aborted requests
+            if (error.name !== 'AbortError') {
+                console.error('Error searching items:', error);
+            }
             throw error;
         }
     }

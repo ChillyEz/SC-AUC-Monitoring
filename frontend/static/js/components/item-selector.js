@@ -9,8 +9,9 @@ class ItemSelector {
         this.currentItemId = '';
         this.currentItemCategory = '';
         this.autocompleteDropdown = null;
-        this.searchTimeout = null;
+        this. searchTimeout = null;
         this.selectedIndex = -1;
+        this. currentAbortController = null;  // ← Для отмены запросов
         
         this.initAutocomplete();
         
@@ -25,7 +26,7 @@ class ItemSelector {
                 }
             } else if (e.key === 'ArrowDown') {
                 e.preventDefault();
-                this.navigateDropdown(1);
+                this. navigateDropdown(1);
             } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
                 this.navigateDropdown(-1);
@@ -44,7 +45,7 @@ class ItemSelector {
         // Create autocomplete dropdown
         this.autocompleteDropdown = document.createElement('div');
         this.autocompleteDropdown.className = 'autocomplete-dropdown';
-        this.autocompleteDropdown.style.display = 'none';
+        this.autocompleteDropdown. style.display = 'none';
         
         // Position relative to input
         const inputParent = this.inputElement.parentElement;
@@ -58,7 +59,7 @@ class ItemSelector {
         
         // Hide dropdown on outside click
         document.addEventListener('click', (e) => {
-            if (e.target !== this.inputElement && !this.autocompleteDropdown.contains(e.target)) {
+            if (e.target !== this.inputElement && ! this.autocompleteDropdown. contains(e.target)) {
                 this.hideAutocomplete();
             }
         });
@@ -70,31 +71,80 @@ class ItemSelector {
             clearTimeout(this.searchTimeout);
         }
         
-        // Debounce search (300ms)
+        // Cancel previous request
+        if (this. currentAbortController) {
+            this.currentAbortController.abort();
+            this.currentAbortController = null;
+        }
+        
+        const trimmedQuery = query.trim();
+        console.log(`[ItemSelector] Input: "${trimmedQuery}" (length: ${trimmedQuery.length})`);
+        
+        // Hide if too short
+        if (trimmedQuery.length < 2) {
+            this.hideAutocomplete();
+            return;
+        }
+        
+        // Show loading indicator
+        this.showLoading();
+        
+        // Debounce search (500ms - немного увеличил для более медленных запросов)
         this.searchTimeout = setTimeout(async () => {
-            if (query.length >= 2) {
-                await this.searchItems(query);
-            } else {
-                this.hideAutocomplete();
-            }
-        }, 300);
+            await this.searchItems(trimmedQuery);
+        }, 500);
+    }
+    
+    showLoading() {
+        this.autocompleteDropdown.innerHTML = '<div class="autocomplete-loading">🔍 Поиск... </div>';
+        this.autocompleteDropdown.style.display = 'block';
+    }
+    
+    showError(message) {
+        this.autocompleteDropdown.innerHTML = `<div class="autocomplete-error">❌ ${message}</div>`;
+        this.autocompleteDropdown.style.display = 'block';
+    }
+    
+    showEmpty() {
+        this.autocompleteDropdown.innerHTML = '<div class="autocomplete-empty">😕 Ничего не найдено</div>';
+        this.autocompleteDropdown.style.display = 'block';
     }
     
     async searchItems(query) {
+        console.log(`[ItemSelector] Searching for: "${query}"`);
+        
+        // Create abort controller
+        this.currentAbortController = new AbortController();
+        const signal = this.currentAbortController.signal;
+        
         try {
-            const response = await apiClient.searchItems(query, 'ru');
-            if (response.items && response.items.length > 0) {
+            const startTime = Date.now();
+            const response = await apiClient.searchItems(query, 'ru', signal);
+            const duration = Date.now() - startTime;
+            
+            console.log(`[ItemSelector] Search completed in ${duration}ms, found ${response.items?. length || 0} items`);
+            
+            if (response. items && response.items.length > 0) {
                 this.showAutocomplete(response.items);
             } else {
-                this.hideAutocomplete();
+                this.showEmpty();
             }
         } catch (error) {
-            console.error('Error searching items:', error);
-            this.hideAutocomplete();
+            if (error.name === 'AbortError') {
+                console. log('[ItemSelector] Search aborted');
+                return;
+            }
+            
+            console.error('[ItemSelector] Search error:', error);
+            this.showError('Ошибка поиска. Попробуйте снова.');
+        } finally {
+            this.currentAbortController = null;
         }
     }
     
     showAutocomplete(items) {
+        console.log(`[ItemSelector] Showing ${items.length} items in dropdown`);
+        
         this.autocompleteDropdown.innerHTML = '';
         this.selectedIndex = -1;
         
@@ -110,18 +160,21 @@ class ItemSelector {
             icon.src = item.icon_url || '';
             icon.alt = item.name;
             icon.className = 'item-icon';
-            icon.onerror = function() { this.style.display = 'none'; };
+            icon.onerror = function() { 
+                this.style.display = 'none';
+                console.warn(`[ItemSelector] Failed to load icon:  ${item.icon_url}`);
+            };
             
             // Create info container
             const infoDiv = document.createElement('div');
             infoDiv.className = 'item-info';
             
-            // Create name element (using textContent for safety)
+            // Create name element
             const nameDiv = document.createElement('div');
             nameDiv.className = 'item-name';
             nameDiv.textContent = item.name;
             
-            // Create ID element (using textContent for safety)
+            // Create ID element
             const idDiv = document.createElement('div');
             idDiv.className = 'item-id';
             idDiv.textContent = item.id;
@@ -133,6 +186,7 @@ class ItemSelector {
             itemDiv.appendChild(infoDiv);
             
             itemDiv.addEventListener('click', () => {
+                console.log(`[ItemSelector] Item clicked: ${item.id}`);
                 this.selectItem(item);
             });
             
@@ -150,7 +204,7 @@ class ItemSelector {
     }
     
     navigateDropdown(direction) {
-        if (!this.autocompleteDropdown || this.autocompleteDropdown.style.display === 'none') {
+        if (! this.autocompleteDropdown || this.autocompleteDropdown.style.display === 'none') {
             return;
         }
         
@@ -159,13 +213,13 @@ class ItemSelector {
         
         // Remove current selection
         if (this.selectedIndex >= 0 && items[this.selectedIndex]) {
-            items[this.selectedIndex].classList.remove('selected');
+            items[this.selectedIndex]. classList.remove('selected');
         }
         
         // Update index
         this.selectedIndex += direction;
         if (this.selectedIndex < 0) {
-            this.selectedIndex = items.length - 1;
+            this. selectedIndex = items.length - 1;
         } else if (this.selectedIndex >= items.length) {
             this.selectedIndex = 0;
         }
@@ -180,7 +234,7 @@ class ItemSelector {
     selectItemFromDropdown(index) {
         const items = this.autocompleteDropdown.querySelectorAll('.autocomplete-item');
         if (items[index]) {
-            const itemId = items[index].dataset.itemId;
+            const itemId = items[index].dataset. itemId;
             const category = items[index].dataset.category;
             const itemName = items[index].querySelector('.item-name').textContent;
             this.selectItem({ id: itemId, category: category, name: itemName });
@@ -188,20 +242,22 @@ class ItemSelector {
     }
     
     selectItem(item) {
+        console.log(`[ItemSelector] Item selected: ${item.id}`);
         this.currentItemId = item.id;
-        this.currentItemCategory = item.category;
+        this. currentItemCategory = item.category;
         this.inputElement.value = item.name || item.id;
         this.hideAutocomplete();
-        this.onItemSelect(item.id);
+        this.onItemSelect(item. id);
     }
     
     handleSearch() {
-        const itemId = this.currentItemId || this.inputElement.value.trim();
+        const itemId = this.currentItemId || this.inputElement.value. trim();
         if (!itemId) {
-            alert('Пожалуйста, введите ID предмета');
+            alert('Пожалуйста, введите ID предмета или выберите из списка');
             return;
         }
         
+        console.log(`[ItemSelector] Manual search:  ${itemId}`);
         this.onItemSelect(itemId);
     }
     
