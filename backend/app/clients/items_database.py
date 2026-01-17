@@ -112,7 +112,7 @@ class ItemsDatabaseClient:
         # GitHub API URL for directory listing
         api_url = f"https://api.github.com/repos/{settings.GITHUB_DB_REPO}/contents/{realm}/items/{category}"
 
-        items = []
+        items:  list[ItemSearchResult] = []
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.get(api_url, timeout=10.0)
@@ -160,7 +160,7 @@ class ItemsDatabaseClient:
             List of ItemSearchResult objects
         """
         query_lower = query.lower()
-        results = []
+        results: list[ItemSearchResult] = []
         failed_categories = 0
 
         # Search across all categories
