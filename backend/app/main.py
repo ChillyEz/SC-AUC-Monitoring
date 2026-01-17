@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from contextlib import asynccontextmanager
@@ -48,6 +48,10 @@ app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 frontend_static = Path(__file__).parent.parent. parent / "frontend" / "static"
 if frontend_static.exists():
     app.mount("/static", StaticFiles(directory=str(frontend_static)), name="static")
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return RedirectResponse(url="/static/favicon.ico")
 
 
 # Serve index.html
