@@ -58,7 +58,7 @@ class ItemsService:
             icon_url=item["icon_url"],
         )
 
-    async def update_database(self, realms:  list[str] | None = None):
+    async def update_database(self, realms: list[str] | None = None):
         """
         Обновить локальную базу данных
 

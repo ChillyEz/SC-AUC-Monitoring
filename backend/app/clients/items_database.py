@@ -7,6 +7,7 @@ from app.config import settings
 from app.models.items import Item, ItemName, ItemSearchResult
 from app.core.exceptions import ItemNotFoundError
 
+
 class ItemsDatabaseClient:
     """Client for interacting with the stalcraft-database GitHub repository"""
 
@@ -111,7 +112,7 @@ class ItemsDatabaseClient:
         # GitHub API URL for directory listing
         api_url = f"https://api.github.com/repos/{settings.GITHUB_DB_REPO}/contents/{realm}/items/{category}"
 
-        items = []
+        items: list[ItemSearchResult] = []
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.get(api_url, timeout=10.0)
