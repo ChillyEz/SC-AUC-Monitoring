@@ -1,6 +1,7 @@
 """
 Items Database Manager - manages local cache of stalcraft-database
 """
+
 import asyncio
 import json
 from datetime import datetime, timedelta
@@ -32,7 +33,9 @@ class ItemsDatabaseManager:
         # GitHub configuration
         self.github_repo = settings.GITHUB_DB_REPO
         self.github_branch = settings.GITHUB_DB_BRANCH
-        self.raw_base_url = f"https://raw.githubusercontent.com/{self.github_repo}/{self.github_branch}"
+        self.raw_base_url = (
+            f"https://raw.githubusercontent.com/{self.github_repo}/{self.github_branch}"
+        )
         self.api_base_url = f"https://api.github.com/repos/{self.github_repo}/contents"
 
         # Categories to index
@@ -68,9 +71,9 @@ class ItemsDatabaseManager:
             "other",  # Прочее
         ]
 
-    async def initialize(self, force_update:  bool = False):
+    async def initialize(self, force_update: bool = False):
         """Initialize database - load from cache or download"""
-        if force_update: 
+        if force_update:
             print("🔄 Force updating items database...")
             await self.update_database()
         elif self._cache_exists() and not self._cache_expired():
@@ -92,7 +95,7 @@ class ItemsDatabaseManager:
         if not self.metadata_file.exists():
             return True
 
-        try: 
+        try:
             metadata = json.loads(self.metadata_file.read_text(encoding="utf-8"))
             last_update = datetime.fromisoformat(metadata["last_update"])
             return datetime.now() - last_update > timedelta(hours=24)
@@ -101,13 +104,11 @@ class ItemsDatabaseManager:
 
     def _load_from_cache(self):
         """Load search index from cache"""
-        try: 
-            self.search_index = json.loads(
-                self.index_file.read_text(encoding="utf-8")
-            )
+        try:
+            self.search_index = json.loads(self.index_file.read_text(encoding="utf-8"))
             metadata = json.loads(self.metadata_file.read_text(encoding="utf-8"))
             self.last_update = datetime.fromisoformat(metadata["last_update"])
-        except Exception as e: 
+        except Exception as e:
             print(f"⚠️  Failed to load cache:  {e}")
             self.search_index = {}
 
@@ -121,16 +122,14 @@ class ItemsDatabaseManager:
 
             metadata = {
                 "last_update": datetime.now().isoformat(),
-                "total_items": sum(
-                    len(items) for items in self.search_index.values()
-                ),
+                "total_items": sum(len(items) for items in self.search_index.values()),
                 "realms": list(self.search_index.keys()),
             }
             self.metadata_file.write_text(
                 json.dumps(metadata, ensure_ascii=False, indent=2),
                 encoding="utf-8",
             )
-        except Exception as e: 
+        except Exception as e:
             print(f"⚠️  Failed to save cache: {e}")
 
     async def update_database(self, realms: list[str] | None = None):
@@ -165,9 +164,7 @@ class ItemsDatabaseManager:
         self._save_to_cache()
         print("💾 Database cached successfully!")
 
-    async def _index_category(
-        self, realm: str, category: str
-    ) -> list[dict[str, Any]]:
+    async def _index_category(self, realm: str, category: str) -> list[dict[str, Any]]:
         """Index all items in a category"""
         # Get list of item IDs in category (handles subdirectories recursively)
         item_ids = await self._get_category_item_ids(realm, category)
@@ -215,11 +212,13 @@ class ItemsDatabaseManager:
                 if item["type"] == "file" and item["name"].endswith(".json"):
                     # Direct file in root - extract ID
                     item_ids.append(item["name"].replace(".json", ""))
-                elif item["type"] == "dir": 
+                elif item["type"] == "dir":
                     # Skip service directories
                     if item["name"] in ["_variants", "_deprecated"]:
-                        #отладка
-                        print(f"    [DEBUG] {category}: Skipping service directory {item['name']}")
+                        # отладка
+                        print(
+                            f"    [DEBUG] {category}: Skipping service directory {item['name']}"
+                        )
                         continue
                     # Valid subdirectory - explore it
                     subdirs.append(item["name"])
@@ -228,14 +227,14 @@ class ItemsDatabaseManager:
             print(f"    [DEBUG] {category}: Found {len(subdirs)} subdirectories")
 
             # If we found subdirectories, recursively fetch from them
-            if subdirs: 
+            if subdirs:
                 print(f"       → {category}:  Found {len(subdirs)} subdirectories")
 
                 for subdir in subdirs:
                     subdir_url = (
                         f"{self.api_base_url}/{realm}/items/{category}/{subdir}"
                     )
-                    try: 
+                    try:
                         sub_response = await client.get(
                             subdir_url, headers=headers, timeout=30.0
                         )
@@ -245,9 +244,8 @@ class ItemsDatabaseManager:
                         # Extract IDs from subdirectory
                         subdir_files = 0
                         for sub_item in sub_data:
-                            if (
-                                sub_item["type"] == "file"
-                                and sub_item["name"].endswith(".json")
+                            if sub_item["type"] == "file" and sub_item["name"].endswith(
+                                ".json"
                             ):
                                 # Store with subdirectory:  "subdir/itemid"
                                 item_id = (
@@ -262,13 +260,13 @@ class ItemsDatabaseManager:
                     except Exception as e:
                         print(f"         └─ {subdir}:  ERROR - {e}")
 
-            #отладка
+            # отладка
             print(f"    [DEBUG] {category}: Total item IDs found: {len(item_ids)}")
 
             return item_ids
 
     async def _fetch_item_data(
-        self, realm: str, category: str, item_id:  str
+        self, realm: str, category: str, item_id: str
     ) -> dict[str, Any] | None:
         """
         Fetch item data and extract searchable info
@@ -299,7 +297,7 @@ class ItemsDatabaseManager:
                     "id": item_id,  # Сохраняем полный путь (с подпапкой если есть)
                     "name": display_name,
                     "category": category,
-                    "icon_url":  f"{self.raw_base_url}/{realm}/icons/{category}/{item_id}.png",
+                    "icon_url": f"{self.raw_base_url}/{realm}/icons/{category}/{item_id}.png",
                     # Store name variants for search
                     "name_lower": display_name.lower(),
                     "name_ru": lines.get("ru", "").lower(),
@@ -309,7 +307,7 @@ class ItemsDatabaseManager:
             return None
 
     def search(
-        self, query: str, realm: str = "ru", limit:  int = 20
+        self, query: str, realm: str = "ru", limit: int = 20
     ) -> list[dict[str, Any]]:
         """
         Fast local search in indexed items
@@ -350,15 +348,13 @@ class ItemsDatabaseManager:
 
         return results
 
-    def get_item_by_id(
-        self, item_id: str, realm: str = "ru"
-    ) -> dict[str, Any] | None:
+    def get_item_by_id(self, item_id: str, realm: str = "ru") -> dict[str, Any] | None:
         """Get item by ID from index"""
         if realm not in self.search_index:
             return None
 
         for item in self.search_index[realm]:
-            if item["id"] == item_id: 
+            if item["id"] == item_id:
                 return {
                     "id": item["id"],
                     "name": item["name"],
