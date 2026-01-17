@@ -20,16 +20,16 @@ from app.config import settings
 async def test_auction_lots(region: str, item_id: str):
     """Тест получения лотов"""
     url = f"{settings.api_base_url}/{region}/auction/{item_id}/lots"
-    
+
     # Параметры запроса согласно документации API
     params = {
         "additional": "false",
         "limit": "20",
         "offset": "0",
         "order": "desc",
-        "sort": "time_created"
+        "sort": "time_created",
     }
-    
+
     headers = {"Content-Type": "application/json"}
     if not settings.USE_DEMO_API and settings.STALCRAFT_API_TOKEN:
         headers["Authorization"] = f"Bearer {settings.STALCRAFT_API_TOKEN}"
@@ -40,7 +40,9 @@ async def test_auction_lots(region: str, item_id: str):
 
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.get(url, headers=headers, params=params, timeout=10.0)
+            response = await client.get(
+                url, headers=headers, params=params, timeout=10.0
+            )
             print(f"Status: {response.status_code}")
 
             if response.status_code == 200:
@@ -65,14 +67,10 @@ async def test_auction_lots(region: str, item_id: str):
 async def test_auction_history(region: str, item_id: str):
     """Тест получения истории"""
     url = f"{settings.api_base_url}/{region}/auction/{item_id}/history"
-    
+
     # Параметры запроса согласно документации API
-    params = {
-        "additional": "false",
-        "limit": "20",
-        "offset": "0"
-    }
-    
+    params = {"additional": "false", "limit": "20", "offset": "0"}
+
     headers = {"Content-Type": "application/json"}
     if not settings.USE_DEMO_API and settings.STALCRAFT_API_TOKEN:
         headers["Authorization"] = f"Bearer {settings.STALCRAFT_API_TOKEN}"
@@ -83,7 +81,9 @@ async def test_auction_history(region: str, item_id: str):
 
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.get(url, headers=headers, params=params, timeout=10.0)
+            response = await client.get(
+                url, headers=headers, params=params, timeout=10.0
+            )
             print(f"Status: {response.status_code}")
 
             if response.status_code == 200:

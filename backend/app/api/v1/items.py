@@ -1,10 +1,11 @@
 """
 Items API endpoints
 """
+
 from fastapi import APIRouter, HTTPException, Query
 from app.services.items_service import items_service
-from app.models. items import ItemSearchResult, ItemsListResponse
-from app.core. exceptions import ItemNotFoundError
+from app.models.items import ItemSearchResult, ItemsListResponse
+from app.core.exceptions import ItemNotFoundError
 
 router = APIRouter(prefix="/items", tags=["Items"])
 
@@ -17,7 +18,7 @@ async def search_items(
 ):
     """
     Быстрый поиск предметов в локальной базе
-    
+
     - **query**: Поисковый запрос (название или ID)
     - **realm**: Регион (ru или global)
     - **limit**: Максимальное количество результатов
@@ -31,15 +32,15 @@ async def search_items(
 @router.get("/{item_id}", response_model=ItemSearchResult)
 async def get_item(
     item_id: str,
-    realm:  str = Query(default="ru", description="Realm (ru, global)"),
+    realm: str = Query(default="ru", description="Realm (ru, global)"),
 ):
     """
     Получить информацию о предмете по ID
-    
+
     - **item_id**: ID предмета
     - **realm**: Регион
     """
-    try: 
+    try:
         return await items_service.get_item(item_id, realm)
     except ItemNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -53,17 +54,19 @@ async def update_database(
 ):
     """
     Обновить локальную базу данных предметов
-    
-    **Внимание**: Эта операция может занять несколько минут! 
-    
+
+    **Внимание**: Эта операция может занять несколько минут!
+
     - **realms**: Список регионов для обновления
     """
     try:
-        await items_service. update_database(realms)
+        await items_service.update_database(realms)
         return {
             "status": "success",
             "message": f"Database updated for realms: {', '.join(realms)}",
-            "total_items": sum(len(items) for items in items_service.db_manager.search_index.values()),
+            "total_items": sum(
+                len(items) for items in items_service.db_manager.search_index.values()
+            ),
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Update failed: {str(e)}")

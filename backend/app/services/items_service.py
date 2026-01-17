@@ -1,8 +1,9 @@
 """
 Items service - работа с базой предметов Stalcraft
 """
+
 from app.services.items_database_manager import items_db_manager
-from app. models.items import ItemSearchResult, ItemsListResponse
+from app.models.items import ItemSearchResult, ItemsListResponse
 from app.core.exceptions import ItemNotFoundError
 
 
@@ -17,14 +18,14 @@ class ItemsService:
     ) -> ItemsListResponse:
         """
         Быстрый поиск предметов в локальной базе
-        
+
         Args:
             query: Поисковый запрос
             realm: Регион (ru, global)
             limit: Максимальное количество результатов
         """
         results = self.db_manager.search(query, realm, limit)
-        
+
         items = [
             ItemSearchResult(
                 id=item["id"],
@@ -34,22 +35,22 @@ class ItemsService:
             )
             for item in results
         ]
-        
+
         return ItemsListResponse(items=items, total=len(items))
 
     async def get_item(self, item_id: str, realm: str = "ru") -> ItemSearchResult:
         """
         Получить информацию о предмете по ID
-        
-        Args: 
+
+        Args:
             item_id: ID предмета
             realm: Регион
         """
-        item = self. db_manager.get_item_by_id(item_id, realm)
-        
+        item = self.db_manager.get_item_by_id(item_id, realm)
+
         if not item:
             raise ItemNotFoundError(f"Item {item_id} not found")
-        
+
         return ItemSearchResult(
             id=item["id"],
             name=item["name"],
@@ -60,8 +61,8 @@ class ItemsService:
     async def update_database(self, realms: list[str] = None):
         """
         Обновить локальную базу данных
-        
-        Args: 
+
+        Args:
             realms:  Список регионов для обновления
         """
         await self.db_manager.update_database(realms)
