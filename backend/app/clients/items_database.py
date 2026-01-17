@@ -7,7 +7,6 @@ from app.config import settings
 from app.models.items import Item, ItemName, ItemSearchResult
 from app.core.exceptions import ItemNotFoundError
 
-
 class ItemsDatabaseClient:
     """Client for interacting with the stalcraft-database GitHub repository"""
 
@@ -160,7 +159,7 @@ class ItemsDatabaseClient:
             List of ItemSearchResult objects
         """
         query_lower = query.lower()
-        results = []
+        results: list[ItemSearchResult] = []
         failed_categories = 0
 
         # Search across all categories
